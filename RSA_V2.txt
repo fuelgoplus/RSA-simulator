@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arlitech Rewards Oracle - V2.0 Professional Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        :root {
+            /* Default Matrix: Slight-Gray */
+            --matrix-bg: #E0DED8;
+            --matrix-panel: #F5F4F2;
+            --matrix-main: #1A1A1A;
+            --matrix-label: #444444;
+            --matrix-grid: #B5B5B5;
+            --matrix-primary1: #245B61;
+            --matrix-primary2: #32938B;
+            --matrix-positive: #26764A;
+            --matrix-negative: #AA2E2E;
+            --matrix-accent: #D9A940;
+            --matrix-input: #FFFFFF;
+            
+            /* Font Variables */
+            --matrix-font-size: 1.1rem;
+            --matrix-font-family: "Microsoft Jhenghei UI", "Microsoft JhengHei", sans-serif;
+            --matrix-font-weight: 600;
+        }
+
+        body { 
+            background-color: var(--matrix-bg); 
+            color: var(--matrix-main); 
+            font-family: var(--matrix-font-family);
+            font-weight: var(--matrix-font-weight);
+            -webkit-font-smoothing: antialiased;
+            font-size: var(--matrix-font-size); 
+            transition: background-color 0.3s ease, font-size 0.2s ease;
+        }
+
+        .legibility-enhanced { -webkit-font-smoothing: subpixel-antialiased; letter-spacing: 0.02em; }
+
+        .glass-card { background-color: var(--matrix-panel); border: 1px solid var(--matrix-grid); }
+        .table-container { overflow-x: auto; border-radius: 0.125rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        .full-container { width: 100%; padding-left: 0.25rem; padding-right: 0.25rem; text-align: left; }
+        
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1100px; table-layout: fixed; background-color: var(--matrix-input); }
+        th { background-color: var(--matrix-main) !important; color: var(--matrix-panel) !important; padding: 6px 5px; text-align: left; font-size: 0.9em; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+        td { padding: 6px 5px; border-bottom: 1px solid var(--matrix-grid); font-size: 0.95em; vertical-align: top; color: var(--matrix-main); }
+        
+        .col-year { width: 55px; }
+        .col-base { width: 115px; }
+        .col-shares { width: 100px; }
+        .col-calc { width: 280px; } 
+        .col-equity { width: 125px; }
+        .col-sell { width: 110px; }
+        .col-cash { width: 110px; }
+        .col-tdc { width: 130px; }
+        .col-avg { width: 130px; }
+
+        .col-calc-cell { white-space: normal !important; word-wrap: break-word; line-height: 1.25; font-size: 0.85em; }
+        .calc-line { display: block; border-bottom: 1px dashed var(--matrix-grid); padding: 2px 0; color: var(--matrix-label); }
+        .calc-line:last-child { border-bottom: none; }
+
+        tr:last-child td { border-bottom: none; }
+        .numeric { text-align: right; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; font-weight: 800; }
+        
+        input[type="range"] { accent-color: var(--matrix-primary1); }
+        .param-input { border: 1.5px solid var(--matrix-grid); border-radius: 2px; padding: 2px 4px; width: 100%; font-weight: 800; font-size: 0.9em; color: var(--matrix-main); background-color: var(--matrix-input); }
+        
+        .lang-btn, .theme-btn, .font-btn { transition: all 0.2s; border: 1px solid var(--matrix-grid); padding: 1px 6px; font-size: 10px; line-height: 1.2; color: var(--matrix-label); background-color: var(--matrix-input); font-weight: 800; }
+        .lang-btn.active, .theme-btn.active, .font-btn.active { background-color: var(--matrix-main); color: var(--matrix-panel); border-color: var(--matrix-main); }
+        
+        .version-badge { font-size: 10px; font-weight: 800; background-color: var(--matrix-panel); color: var(--matrix-label); border: 1px solid var(--matrix-grid); padding: 1px 6px; border-radius: 9999px; text-transform: uppercase; }
+
+        .manual-row { display: grid; grid-template-columns: 45px 1fr 1fr 1fr 1fr 1fr; gap: 0.4rem; align-items: center; padding: 0.2rem 0.4rem; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--matrix-main); border-radius: 10px; }
+        .result-box { background: var(--matrix-main); color: var(--matrix-panel); }
+
+        #colorModal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        #colorModal.active { display: flex; }
+        .modal-content { background: var(--matrix-panel); border: 2px solid var(--matrix-main); padding: 1.5rem; border-radius: 0.5rem; max-width: 800px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+        
+        .color-well { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: var(--matrix-input); border: 1px solid var(--matrix-grid); border-radius: 4px; }
+        .color-input { width: 35px; height: 25px; border: none; cursor: pointer; background: none; }
+        .close-btn { background: var(--matrix-main); color: var(--matrix-panel); padding: 4px 16px; font-weight: 800; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body class="p-0.5">
+
+    <!-- Color Fine-Tune Modal -->
+    <div id="colorModal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-400 pb-2">
+                <h4 id="colorPlateTitle" class="text-xs font-bold uppercase tracking-widest">Color System Fine-Tune</h4>
+                <button onclick="closeModal()" class="close-btn">DONE</button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4" id="tunePlate">
+                <!-- Injected via JS -->
+            </div>
+            <p class="text-[10px] italic opacity-60">Real-time update: UI elements will sync immediately with color changes.</p>
+        </div>
+    </div>
+
+    <header class="full-container mb-3">
+        <div class="flex justify-between items-center border-b border-gray-400 pb-1">
+            <h1 id="mainTitle" class="text-xl font-bold tracking-tight">Total Rewards Dynamic Modeling Platform</h1>
+            
+            <div class="flex items-center gap-2 ml-4">
+                <!-- Font Settings Group -->
+                <div class="flex bg-white p-0.5 rounded border border-gray-300 shadow-sm" id="fontGroup">
+                    <button onclick="changeFontSize('0.95rem')" id="f-small" class="font-btn rounded-l-sm">A-</button>
+                    <button onclick="changeFontSize('1.1rem')" id="f-mid" class="font-btn active">A</button>
+                    <button onclick="changeFontSize('1.25rem')" id="f-large" class="font-btn rounded-r-sm">A+</button>
+                    
+                    <div class="w-px bg-gray-300 mx-1"></div>
+                    
+                    <button onclick="changeFontType('sans')" id="f-sans" class="font-btn rounded-l-sm active">Sans</button>
+                    <button onclick="changeFontType('serif')" id="f-serif" class="font-btn rounded-r-sm">Serif</button>
+                    
+                    <div class="w-px bg-gray-300 mx-1"></div>
+                    
+                    <button onclick="toggleLegibility()" id="f-legibility" class="font-btn rounded-sm">High-Res</button>
+                </div>
+
+                <!-- Theme Selectors -->
+                <div class="flex bg-white p-0.5 rounded border border-gray-300 shadow-sm" id="themeGroup">
+                    <button onclick="changeTheme('light')" class="theme-btn rounded-l-sm">Light</button>
+                    <button onclick="changeTheme('slightGray')" class="theme-btn active">Gray</button>
+                    <button onclick="changeTheme('dark')" class="theme-btn">Dark</button>
+                    <button onclick="changeTheme('extraDark')" class="theme-btn rounded-r-sm">Extra</button>
+                </div>
+
+                <span id="versionLabel" class="version-badge">V2.0</span>
+                
+                <div class="flex bg-white p-0.5 rounded border border-gray-300 shadow-sm">
+                    <button onclick="setLanguage('en')" id="btn-en" class="lang-btn rounded-l-sm active">EN</button>
+                    <button onclick="setLanguage('zh')" id="btn-zh" class="lang-btn rounded-r-sm">繁</button>
+                </div>
+            </div>
+        </div>
+        <p id="subTitle" class="font-bold uppercase tracking-[0.1em] text-[10px] mt-1 opacity-70">Arlitech Rewards Oracle • Professional Series</p>
+    </header>
+
+    <!-- Global Controls -->
+    <aside class="full-container mb-3">
+        <div class="glass-card p-3 rounded shadow-sm">
+            <h3 id="quickSetTitle" class="text-[11px] font-bold uppercase mb-2 opacity-80">Quick Setup</h3>
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
+                <div class="space-y-1">
+                    <label id="labelPeriod" class="block text-[10px] font-bold uppercase">
+                        Period: <span id="yearVal" style="color: var(--matrix-primary1)">3</span> <span id="unitYear">Years</span>
+                    </label>
+                    <input type="range" id="yearSlider" min="1" max="10" value="3" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelSalary" class="block text-[10px] font-bold uppercase">Base Salary</label>
+                    <input type="number" id="baseSalaryInput" value="0" class="param-input">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelGrant" class="block text-[10px] font-bold uppercase">Grant Qty</label>
+                    <input type="number" id="rsaGrantInput" value="0" class="param-input">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelPrice" class="block text-[10px] font-bold uppercase">Price</label>
+                    <input type="number" id="stockPriceInput" value="0" class="param-input">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelCashDist" class="block text-[10px] font-bold uppercase">Cash Div/Sh</label>
+                    <input type="number" id="cashDistInput" value="0" class="param-input" style="color: var(--matrix-primary1)">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelExercise" class="block text-[10px] font-bold uppercase" style="color: var(--matrix-negative)">Sell Qty</label>
+                    <input type="number" id="exerciseInput" value="0" class="param-input">
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Manual Overrides -->
+    <aside class="full-container mb-3">
+        <div class="glass-card p-3 rounded shadow-sm">
+            <h3 id="manualSchedTitle" class="text-[11px] font-bold uppercase mb-2 opacity-80">Annual Schedule Overrides</h3>
+            <div id="manualInputsContainer" class="max-h-40 overflow-y-auto pr-2 custom-scrollbar text-[12px]">
+                <!-- Inject -->
+            </div>
+        </div>
+    </aside>
+
+    <main class="full-container space-y-6 pb-12">
+        <section>
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-md font-bold uppercase" id="tableTitle">Overlapping Vesting Statement</h2>
+                <span id="vestingNote" class="text-[10px] font-bold px-2 py-1 rounded" style="background-color: var(--matrix-main); color: var(--matrix-panel);">RSA: 20/30/50 Schedule</span>
+            </div>
+            <div class="table-container custom-scrollbar">
+                <table id="tdcTable">
+                    <thead>
+                        <tr id="tableHeadRow">
+                            <!-- Inject -->
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Inject -->
+                    </tbody>
+                    <tfoot id="tableFoot" class="font-bold text-[1.1em]" style="background-color: var(--matrix-main); color: var(--matrix-panel);">
+                        <!-- Inject -->
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <div class="grid lg:grid-cols-2 gap-4">
+             <section class="glass-card p-3 rounded shadow-sm">
+                <h3 id="targetSimTitle" class="text-sm font-bold mb-2 uppercase flex items-center gap-1">
+                    <svg class="h-4 w-4" style="color: var(--matrix-primary1)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                    Averaged TDC Simulator
+                </h3>
+                <div class="grid grid-cols-5 gap-2 mb-3">
+                    <div class="space-y-1">
+                        <label id="labelSimTarget" class="block text-[8px] font-bold uppercase opacity-70">Target TDC</label>
+                        <input type="number" id="simTargetInput" value="3000000" oninput="calculateTargetTDC()" class="param-input text-xs">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="labelSimBase" class="block text-[8px] font-bold uppercase opacity-70">Base Sal.</label>
+                        <input type="number" id="simBaseInput" oninput="calculateTargetTDC()" class="param-input text-xs">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="labelSimGrant" class="block text-[8px] font-bold uppercase opacity-70">Grant Qty</label>
+                        <input type="number" id="simGrantInput" oninput="calculateTargetTDC()" class="param-input text-xs">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="labelSimPrice" class="block text-[8px] font-bold uppercase opacity-70">Price</label>
+                        <input type="number" id="simPriceInput" oninput="calculateTargetTDC()" class="param-input text-xs">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="labelSimDiv" class="block text-[8px] font-bold uppercase opacity-70">Cash Div.</label>
+                        <input type="number" id="simDivInput" oninput="calculateTargetTDC()" class="param-input text-xs" style="color: var(--matrix-primary1)">
+                    </div>
+                </div>
+                <div class="result-box p-3 rounded flex justify-around items-center">
+                    <div class="text-center w-1/2 border-r border-gray-500/30">
+                        <span id="labelSimResYear" class="text-[9px] block opacity-60 uppercase">Hit Year</span>
+                        <span class="text-xl font-bold" style="color: var(--matrix-primary2)" id="simResultYear">-</span>
+                    </div>
+                    <div class="text-center w-1/2">
+                        <span id="labelSimResAvg" class="text-[9px] block opacity-60 uppercase">Avg. TDC</span>
+                        <span class="text-md font-bold" id="simResultAvg">NT$ 0</span>
+                    </div>
+                </div>
+             </section>
+
+             <section class="glass-card p-4 rounded border-l-4 shadow-sm" style="border-left-color: var(--matrix-primary1)">
+                <h3 id="insight1Title" class="font-bold text-xs mb-2 uppercase tracking-tight">RSA Tax Optimization</h3>
+                <p id="insight1Text" class="text-sm leading-normal font-semibold opacity-90">
+                    Loading analysis...
+                </p>
+             </section>
+        </div>
+    </main>
+
+    <script>
+        let currentLang = 'en';
+        let manualData = [];
+        let isEnhancedLegibility = false;
+
+        const themes = {
+            light: { bg: '#F0EEE9', panel: '#E7EAEE', main: '#2B2B6E', label: '#7D8090', grid: '#AEB4C1', primary1: '#2B2B6E', primary2: '#918A9E', positive: '#2E8F5A', negative: '#C03939', accent: '#CCAC8C', input: '#FFFFFF' },
+            slightGray: { bg: '#E0DED8', panel: '#F5F4F2', main: '#1A1A1A', label: '#444444', grid: '#B5B5B5', primary1: '#245B61', primary2: '#32938B', positive: '#26764A', negative: '#AA2E2E', accent: '#D9A940', input: '#FFFFFF' },
+            dark: { bg: '#DEE6E1', panel: '#FCFCFC', main: '#262216', label: '#668177', grid: '#8CA69C', primary1: '#262216', primary2: '#5B7C71', positive: '#2E8F5A', negative: '#C03939', accent: '#D9A940', input: '#FFFFFF' },
+            extraDark: { bg: '#121212', panel: '#1E1E1E', main: '#E0E0E0', label: '#A0A0A0', grid: '#333333', primary1: '#00897B', primary2: '#26A69A', positive: '#43A047', negative: '#E53935', accent: '#FFB300', input: '#2A2A2A' }
+        };
+
+        const i18n = {
+            en: {
+                mainTitle: "Total Rewards Dynamic Modeling Simulator",
+                subTitle: "Arlitech Rewards •Air-Banquet• Official Mode",
+                quickSetTitle: "Quick Setup",
+                manualSchedTitle: "Annual Schedule Overrides",
+                labelPeriod: "Period: ",
+                unitYear: "Years",
+                labelSalary: "Base Salary",
+                labelGrant: "Grant Qty",
+                labelPrice: "Price",
+                labelCashDist: "Cash Div/Sh",
+                labelExercise: "Sell Qty",
+                tableTitlePrefix: "Overlapping Vesting (",
+                tableTitleSuffix: " Years)",
+                vestingNote: "RSA: 20/30/50 Schedule",
+                heads: ["Year", "Base Sal.", "Vested", "Breakdown", "Vest Val.", "Sales (Qty)", "Cash Div. (Hold)", "Total TDC", "Avg. TDC"],
+                sumAccumulated: "ACCUMULATED",
+                sumAvg: "ANNUAL AVG",
+                sharesUnit: "sh/y",
+                colYear: "Year", colSal: "Sal", colGr: "Qty", colPr: "Pr", colCash: "Div", colSell: "Sell",
+                targetSimTitle: "Averaged TDC Simulator",
+                labelSimTarget: "Target TDC", labelSimBase: "Base Sal.", labelSimGrant: "Grant Qty", labelSimPrice: "Price", labelSimDiv: "Cash Div.",
+                labelSimResYear: "Hit Year", labelSimResAvg: "Avg. TDC",
+                insight1Title: "RSA Tax Strategy (Art 19-1)",
+                insight1Text: "Lock taxable income at the lower of 'Acquisition' or 'Disposal' price (Art 19-1). Growth beyond locked basis is tax-free capital gain. Must hold 2+ years.",
+                colorPlateTitle: "Color System Fine-Tune"
+            },
+            zh: {
+                mainTitle: "總薪酬精算平台",
+                subTitle: "加入今展 • 一路舒坦 • BSD出品-必屬佳作",
+                quickSetTitle: "快速設定",
+                manualSchedTitle: "年度參數手動控制區",
+                labelPeriod: "預測週期: ",
+                unitYear: "年",
+                labelSalary: "年度底薪",
+                labelGrant: "授予股數",
+                labelPrice: "目標股價",
+                labelCashDist: "每股分紅",
+                labelExercise: "出售股數",
+                tableTitlePrefix: "疊加歸屬明細表 (",
+                tableTitleSuffix: "年)",
+                vestingNote: "可實現比例：20% / 30% / 50%",
+                heads: ["年份", "底薪現金", "既得股數", "明細拆解", "既得價值", "出售 (股)", "現金股利 (持股)", "年度總額", "平均年薪"],
+                sumAccumulated: "累計總計",
+                sumAvg: "加權平均",
+                sharesUnit: "股/年",
+                colYear: "年份", colSal: "底薪", colGr: "授予", colPr: "股價", colCash: "分紅", colSell: "賣出",
+                targetSimTitle: "平均年薪達標模擬器",
+                labelSimTarget: "目標年薪", labelSimBase: "年度底薪", labelSimGrant: "年發放股", labelSimPrice: "預期股價", labelSimDiv: "預期股息",
+                labelSimResYear: "達標所需年數", labelSimResAvg: "達成平均年薪",
+                insight1Title: "RSA 孰低法節稅策略",
+                insight1Text: "活用產創 19條-1：鎖定取得日與處分日之較低時價為稅基。增值部分屬『免稅證交所得』。需滿足持股滿 2 年條件。",
+                colorPlateTitle: "色彩系統微調儀表板"
+            }
+        };
+
+        const slider = document.getElementById('yearSlider');
+        const salaryInp = document.getElementById('baseSalaryInput');
+        const rsaInp = document.getElementById('rsaGrantInput');
+        const stockInp = document.getElementById('stockPriceInput');
+        const cashDistInp = document.getElementById('cashDistInput');
+        const exerciseInp = document.getElementById('exerciseInput');
+        const manualContainer = document.getElementById('manualInputsContainer');
+
+        function initData() {
+            for(let i=0; i<=10; i++) {
+                manualData[i] = { salary: 0, grant: 0, price: 0, cashDist: 0, exercise: 0 };
+            }
+            renderTunePlate();
+        }
+
+        /* --- FONT ENGINE --- */
+        function changeFontSize(size) {
+            document.documentElement.style.setProperty('--matrix-font-size', size);
+            document.querySelectorAll('#fontGroup .font-btn').forEach(btn => {
+                if (btn.innerText.includes('A')) btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function changeFontType(type) {
+            const font = type === 'serif' ? '"Noto Serif", Georgia, serif' : '"Microsoft Jhenghei UI", "Microsoft JhengHei", sans-serif';
+            document.documentElement.style.setProperty('--matrix-font-family', font);
+            document.getElementById('f-sans').classList.toggle('active', type === 'sans');
+            document.getElementById('f-serif').classList.toggle('active', type === 'serif');
+        }
+
+        function toggleLegibility() {
+            isEnhancedLegibility = !isEnhancedLegibility;
+            document.body.classList.toggle('legibility-enhanced', isEnhancedLegibility);
+            document.documentElement.style.setProperty('--matrix-font-weight', isEnhancedLegibility ? '800' : '600');
+            document.getElementById('f-legibility').classList.toggle('active', isEnhancedLegibility);
+        }
+
+        /* --- THEME & COLOR ENGINE --- */
+        function changeTheme(themeKey) {
+            const theme = themes[themeKey];
+            Object.keys(theme).forEach(key => {
+                document.documentElement.style.setProperty(`--matrix-${key}`, theme[key]);
+            });
+            document.querySelectorAll('#themeGroup button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            openModal();
+        }
+
+        function openModal() {
+            renderTunePlate();
+            document.getElementById('colorModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('colorModal').classList.remove('active');
+        }
+
+        function updateColor(key, value) {
+            document.documentElement.style.setProperty(`--matrix-${key}`, value);
+        }
+
+        function renderTunePlate() {
+            const keys = ['bg', 'panel', 'main', 'label', 'grid', 'primary1', 'primary2', 'positive', 'negative', 'accent', 'input'];
+            let html = "";
+            keys.forEach(key => {
+                const currentVal = getComputedStyle(document.documentElement).getPropertyValue(`--matrix-${key}`).trim();
+                html += `
+                    <div class="color-well">
+                        <input type="color" class="color-input" value="${currentVal}" oninput="updateColor('${key}', this.value)">
+                        <div class="text-[10px] uppercase font-bold text-gray-700">${key}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('tunePlate').innerHTML = html;
+        }
+
+        /* --- I18N & TABLE ENGINE --- */
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${lang}`).classList.add('active');
+            updateUI();
+        }
+
+        function safeSetText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
+        }
+
+        function updateUI() {
+            const t = i18n[currentLang];
+            safeSetText('mainTitle', t.mainTitle);
+            safeSetText('subTitle', t.subTitle);
+            safeSetText('quickSetTitle', t.quickSetTitle);
+            safeSetText('manualSchedTitle', t.manualSchedTitle);
+            const periodEl = document.getElementById('labelPeriod');
+            if (periodEl && periodEl.childNodes.length > 0) periodEl.childNodes[0].textContent = t.labelPeriod;
+            safeSetText('unitYear', t.unitYear);
+            ['labelSalary', 'labelGrant', 'labelPrice', 'labelCashDist', 'labelExercise', 'vestingNote', 'targetSimTitle', 'labelSimTarget', 'labelSimBase', 'labelSimGrant', 'labelSimPrice', 'labelSimDiv', 'labelSimResYear', 'labelSimResAvg', 'insight1Title', 'insight1Text', 'colorPlateTitle'].forEach(id => safeSetText(id, t[id]));
+
+            const colClasses = ["col-year", "col-base", "col-shares", "col-calc", "col-equity", "col-sell", "col-cash", "col-tdc", "col-avg"];
+            let headHtml = "";
+            t.heads.forEach((h, i) => {
+                const alignClass = (i === 0 || i === 3) ? "" : "numeric";
+                headHtml += `<th class="${alignClass} ${colClasses[i]}">${h}</th>`;
+            });
+            const headRow = document.getElementById('tableHeadRow');
+            if (headRow) headRow.innerHTML = headHtml;
+
+            renderManualInputs();
+            updateTable();
+            calculateTargetTDC();
+        }
+
+        function renderManualInputs() {
+            const t = i18n[currentLang];
+            const years = parseInt(slider.value);
+            let html = `
+                <div class="manual-row font-bold text-[8px] uppercase bg-gray-500/10 p-1 mb-1 sticky top-0 z-10 border-b border-gray-400">
+                    <div>${t.colYear}</div><div>${t.colSal}</div><div>${t.colGr}</div><div>${t.colPr}</div><div>${t.colCash}</div><div style="color: var(--matrix-negative)">${t.colSell}</div>
+                </div>
+            `;
+            for(let i=0; i<=years; i++) {
+                html += `
+                    <div class="manual-row border-b border-gray-400/30">
+                        <div class="font-bold opacity-80">Y${i}</div>
+                        <input type="number" value="${manualData[i].salary}" onchange="updateManualData(${i}, 'salary', this.value)" class="param-input">
+                        <input type="number" value="${manualData[i].grant}" onchange="updateManualData(${i}, 'grant', this.value)" class="param-input">
+                        <input type="number" value="${manualData[i].price}" onchange="updateManualData(${i}, 'price', this.value)" class="param-input">
+                        <input type="number" value="${manualData[i].cashDist}" onchange="updateManualData(${i}, 'cashDist', this.value)" class="param-input" style="color: var(--matrix-primary1)">
+                        <input type="number" value="${manualData[i].exercise || 0}" onchange="updateManualData(${i}, 'exercise', this.value)" class="param-input" style="color: var(--matrix-negative)">
+                    </div>
+                `;
+            }
+            if (manualContainer) manualContainer.innerHTML = html;
+        }
+
+        function updateManualData(index, field, value) {
+            manualData[index][field] = parseFloat(value) || 0;
+            updateTable();
+            calculateTargetTDC();
+        }
+
+        function syncGlobalToManual() {
+            const vals = [salaryInp.value, rsaInp.value, stockInp.value, cashDistInp.value, exerciseInp.value];
+            const simBaseEl = document.getElementById('simBaseInput');
+            const simGrantEl = document.getElementById('simGrantInput');
+            const simPriceEl = document.getElementById('simPriceInput');
+            const simDivEl = document.getElementById('simDivInput');
+            
+            if (simBaseEl) simBaseEl.value = vals[0];
+            if (simGrantEl) simGrantEl.value = vals[1];
+            if (simPriceEl) simPriceEl.value = vals[2];
+            if (simDivEl) simDivEl.value = vals[3];
+
+            for(let i=0; i<=10; i++) {
+                manualData[i].salary = parseFloat(vals[0]) || 0;
+                manualData[i].grant = parseFloat(vals[1]) || 0;
+                manualData[i].price = parseFloat(vals[2]) || 0;
+                manualData[i].cashDist = parseFloat(vals[3]) || 0;
+                manualData[i].exercise = parseFloat(vals[4]) || 0;
+            }
+            renderManualInputs();
+            updateTable();
+            calculateTargetTDC();
+        }
+
+        function updateTable() {
+            const t = i18n[currentLang];
+            const years = parseInt(slider.value);
+            const yearValEl = document.getElementById('yearVal');
+            if (yearValEl) yearValEl.innerText = years;
+            const tableTitleEl = document.getElementById('tableTitle');
+            if (tableTitleEl) tableTitleEl.innerText = `${t.tableTitlePrefix}${years}${t.tableTitleSuffix}`;
+            
+            let html = "";
+            let sums = { sal:0, shr:0, val:0, soldQty:0, soldVal:0, div:0, tdc:0 };
+            let cumGrant = 0;
+            let cumVested = 0;
+            let cumSold = 0;
+
+            for (let y = 0; y <= years; y++) {
+                let vShr = 0; let cHtml = "";
+                const cur = manualData[y];
+                cumGrant += cur.grant;
+
+                for (let g = 0; g <= y; g++) {
+                    let idx = y - g; let p = 0;
+                    if (idx === 1) p = 0.2; else if (idx === 2) p = 0.3; else if (idx === 3) p = 0.5;
+                    if (p > 0) {
+                        const amt = manualData[g].grant;
+                        const v = amt * p; vShr += v;
+                        const vestVal = v * cur.price;
+                        const shareLabel = currentLang === 'zh' ? '股' : 'sh';
+                        const valLabel = currentLang === 'zh' ? '值' : 'Val';
+                        cHtml += `<span class="calc-line">G${g}: <span class="font-bold">${Math.round(amt).toLocaleString()}</span>×${Math.round(p*100)}%=<span class="font-bold" style="color: var(--matrix-primary1)">${Math.round(v).toLocaleString()}</span>${shareLabel} <span class="text-[9px] opacity-80 ml-1 font-mono">(${valLabel}: ${Math.round(vestVal).toLocaleString()})</span></span>`;
+                    }
+                }
+                
+                if (cHtml === "") {
+                    cHtml = `<span class="calc-line opacity-50">${currentLang === 'zh' ? '期初授予，尚無歸屬' : 'Initial Grant (No Vest)'}</span>`;
+                }
+
+                cumVested += vShr;
+
+                let actualSell = Math.max(0, Math.min(cur.exercise || 0, cumVested - cumSold));
+                cumSold += actualSell;
+                let sellVal = actualSell * cur.price;
+
+                const eqV = vShr * cur.price;
+                const heldShares = Math.max(0, cumGrant - cumSold);
+                const divV = heldShares * cur.cashDist;
+                const tdc = cur.salary + eqV + divV;
+                
+                sums.tdc += tdc;
+                sums.sal += cur.salary; sums.shr += vShr; sums.val += eqV; sums.div += divV;
+                sums.soldQty += actualSell; sums.soldVal += sellVal;
+
+                let avg = sums.tdc / (y + 1);
+
+                html += `
+                    <tr class="hover:bg-black/5 transition-colors">
+                        <td class="font-bold">Y${y}</td>
+                        <td class="numeric">${Math.round(cur.salary).toLocaleString()}</td>
+                        <td class="numeric font-bold" style="color: var(--matrix-primary1)">${Math.round(vShr).toLocaleString()}</td>
+                        <td class="col-calc-cell">${cHtml}</td>
+                        <td class="numeric">${Math.round(eqV).toLocaleString()}</td>
+                        <td class="numeric font-bold" style="color: var(--matrix-negative)">${Math.round(actualSell).toLocaleString()}</td>
+                        <td class="numeric font-bold" style="color: var(--matrix-primary1)">
+                            ${Math.round(divV).toLocaleString()}<br>
+                            <span class="text-[9px] opacity-70 block font-mono font-normal tracking-tighter">Hold: ${Math.round(heldShares).toLocaleString()}</span>
+                        </td>
+                        <td class="numeric font-bold" style="background-color: var(--matrix-bg); opacity: 0.9">${Math.round(tdc).toLocaleString()}</td>
+                        <td class="numeric font-bold" style="background-color: var(--matrix-panel)">${Math.round(avg).toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+            const tableBody = document.getElementById('tableBody');
+            if (tableBody) tableBody.innerHTML = html;
+            const tableFoot = document.getElementById('tableFoot');
+            if (tableFoot) {
+                tableFoot.innerHTML = `
+                    <tr>
+                        <td class="py-2">${t.sumAccumulated}</td>
+                        <td class="numeric">${Math.round(sums.sal).toLocaleString()}</td>
+                        <td class="numeric">${Math.round(sums.shr).toLocaleString()}</td>
+                        <td class="col-calc-cell">-</td>
+                        <td class="numeric">${Math.round(sums.val).toLocaleString()}</td>
+                        <td class="numeric" style="color: var(--matrix-negative)">${Math.round(sums.soldQty).toLocaleString()}</td>
+                        <td class="numeric">${Math.round(sums.div).toLocaleString()}</td>
+                        <td class="numeric" style="color: var(--matrix-accent)">${Math.round(sums.tdc).toLocaleString()}</td>
+                        <td class="numeric" style="color: var(--matrix-accent)">${Math.round(sums.tdc/(years + 1)).toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        function calculateTargetTDC() {
+            const target = parseFloat(document.getElementById('simTargetInput')?.value) || 0;
+            const base = parseFloat(document.getElementById('simBaseInput')?.value) || 0;
+            const grant = parseFloat(document.getElementById('simGrantInput')?.value) || 0;
+            const price = parseFloat(document.getElementById('simPriceInput')?.value) || 0;
+            const div = parseFloat(document.getElementById('simDivInput')?.value) || 0;
+
+            let cumGrant = 0;
+            let sumsTDC = 0;
+            let hitYear = -1;
+            let hitAvg = 0;
+
+            // Forward simulate up to 30 years to find intersection
+            for(let y = 0; y <= 30; y++) {
+                cumGrant += grant;
+                let vShr = 0;
+                for (let g = 0; g <= y; g++) {
+                    let idx = y - g; let p = 0;
+                    if (idx === 1) p = 0.2; else if (idx === 2) p = 0.3; else if (idx === 3) p = 0.5;
+                    if (p > 0) vShr += grant * p;
+                }
+                const eqV = vShr * price;
+                const divV = cumGrant * div; 
+                const tdc = base + eqV + divV;
+                sumsTDC += tdc;
+                const avg = sumsTDC / (y + 1);
+
+                if (y > 0 && avg >= target) {
+                    hitYear = y;
+                    hitAvg = avg;
+                    break;
+                }
+            }
+
+            if (hitYear !== -1 && target > 0) {
+                safeSetText('simResultYear', `Y${hitYear}`);
+                safeSetText('simResultAvg', `NT$ ${Math.round(hitAvg).toLocaleString()}`);
+            } else if (target > 0) {
+                safeSetText('simResultYear', `>30 Yrs`);
+                safeSetText('simResultAvg', `-`);
+            } else {
+                safeSetText('simResultYear', `-`);
+                safeSetText('simResultAvg', `NT$ 0`);
+            }
+        }
+
+        slider.addEventListener('input', () => { renderManualInputs(); updateTable(); });
+        [salaryInp, rsaInp, stockInp, cashDistInp, exerciseInp].forEach(el => el.addEventListener('input', syncGlobalToManual));
+        window.onload = () => { initData(); updateUI(); };
+    </script>
+</body>
+</html>
