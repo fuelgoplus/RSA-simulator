@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arlitech Rewards Oracle - V3.2 Professional Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        :root {
+            /* Default Matrix: Slight-Gray */
+            --matrix-bg: #E0DED8;
+            --matrix-panel: #F5F4F2;
+            --matrix-main: #1A1A1A;
+            --matrix-label: #444444;
+            --matrix-grid: #B5B5B5;
+            --matrix-primary1: #245B61;
+            --matrix-primary2: #32938B;
+            --matrix-positive: #26764A;
+            --matrix-negative: #AA2E2E;
+            --matrix-accent: #b4c00c;
+            --matrix-input: #FFFFFF;
+            
+            /* Font Variables */
+            --matrix-font-size: 1.1rem;
+            --matrix-font-family: "Microsoft Jhenghei UI", "Microsoft JhengHei", sans-serif;
+            --matrix-font-weight: 600;
+        }
+
+        body { 
+            background-color: var(--matrix-bg); 
+            color: var(--matrix-main); 
+            font-family: var(--matrix-font-family);
+            font-weight: var(--matrix-font-weight);
+            -webkit-font-smoothing: antialiased;
+            font-size: var(--matrix-font-size); 
+            transition: background-color 0.3s ease, font-size 0.2s ease;
+        }
+
+        .legibility-enhanced { -webkit-font-smoothing: subpixel-antialiased; letter-spacing: 0.02em; }
+
+        .glass-card { background-color: var(--matrix-panel); border: 1px solid var(--matrix-grid); }
+        .table-container { overflow-x: auto; border-radius: 0.125rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        .full-container { width: 100%; padding-left: 0.25rem; padding-right: 0.25rem; text-align: left; }
+        
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1100px; table-layout: fixed; background-color: var(--matrix-input); }
+        th { background-color: var(--matrix-main) !important; color: var(--matrix-panel) !important; padding: 6px 5px; text-align: left; font-size: 0.9em; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+        td { padding: 6px 5px; border-bottom: 1px solid var(--matrix-grid); font-size: 0.95em; vertical-align: top; color: var(--matrix-main); }
+        
+        .col-year { width: 75px; } /* Widened to fit date text */
+        .col-base { width: 115px; }
+        .col-shares { width: 100px; }
+        .col-calc { width: 280px; } 
+        .col-equity { width: 125px; }
+        .col-sell { width: 110px; }
+        .col-cash { width: 110px; }
+        .col-tdc { width: 130px; }
+        .col-avg { width: 130px; }
+
+        .col-calc-cell { white-space: normal !important; word-wrap: break-word; line-height: 1.25; font-size: 0.85em; }
+        .calc-line { display: block; border-bottom: 1px dashed var(--matrix-grid); padding: 2px 0; color: var(--matrix-label); }
+        .calc-line:last-child { border-bottom: none; }
+
+        tr:last-child td { border-bottom: none; }
+        .numeric { text-align: right; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; font-weight: 800; }
+        
+        input[type="range"] { accent-color: var(--matrix-primary1); }
+        .param-input { border: 1.5px solid var(--matrix-grid); border-radius: 2px; padding: 2px 4px; width: 100%; font-weight: 800; font-size: 0.9em; color: var(--matrix-main); background-color: var(--matrix-input); text-align: right; }
+        
+        .lang-btn, .theme-btn, .font-btn { transition: all 0.2s; border: 1px solid var(--matrix-grid); padding: 1px 6px; font-size: 10px; line-height: 1.2; color: var(--matrix-label); background-color: var(--matrix-input); font-weight: 800; }
+        .lang-btn.active, .theme-btn.active, .font-btn.active { background-color: var(--matrix-main); color: var(--matrix-panel); border-color: var(--matrix-main); }
+        
+        .version-badge { font-size: 10px; font-weight: 800; background-color: var(--matrix-panel); color: var(--matrix-label); border: 1px solid var(--matrix-grid); padding: 1px 6px; border-radius: 9999px; text-transform: uppercase; }
+
+        .manual-row { display: grid; grid-template-columns: 60px 1fr 1fr 1fr 1fr 1fr; gap: 0.4rem; align-items: center; padding: 0.2rem 0.4rem; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--matrix-main); border-radius: 10px; }
+        .result-box { background: var(--matrix-main); color: var(--matrix-panel); }
+
+        #colorModal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        #colorModal.active { display: flex; }
+        .modal-content { background: var(--matrix-panel); border: 2px solid var(--matrix-main); padding: 1.5rem; border-radius: 0.5rem; max-width: 800px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+        
+        .color-well { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: var(--matrix-input); border: 1px solid var(--matrix-grid); border-radius: 4px; }
+        .color-input { width: 35px; height: 25px; border: none; cursor: pointer; background: none; }
+        .close-btn { background: var(--matrix-main); color: var(--matrix-panel); padding: 4px 16px; font-weight: 800; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body class="p-0.5">
+
+    <!-- Color Fine-Tune Modal -->
+    <div id="colorModal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-400 pb-2">
+                <h4 id="colorPlateTitle" class="text-xs font-bold uppercase tracking-widest">Color System Fine-Tune</h4>
+                <button onclick="closeModal()" class="close-btn">DONE</button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4" id="tunePlate">
+                <!-- Injected via JS -->
+            </div>
+            <p class="text-[10px] italic opacity-60">Real-time update: UI elements will sync immediately with color changes.</p>
+        </div>
+    </div>
+
+    <header class="full-container mb-3">
+        <div class="flex justify-between items-center border-b border-gray-400 pb-1">
+            <h1 id="mainTitle" class="text-xl font-bold tracking-tight">Total Rewards Dynamic Modeling Platform</h1>
+            
+            <div class="flex items-center gap-2 ml-4">
+                <!-- Font Settings Group -->
+                <div class="flex bg-white p-0.5 rounded border border-gray-300 shadow-sm" id="fontGroup">
+                    <button onclick="changeFontSize('0.95rem')" id="f-small" class="font-btn rounded-l-sm">A-</button>
+                    <button onclick="changeFontSize('1.1rem')" id="f-mid" class="font-btn active">A</button>
+                    <button onclick="changeFontSize('1.25rem')" id="f-large" class="font-btn rounded-r-sm">A+</button>
+                    
+                    <div class="w-px bg-gray-300 mx-1"></div>
+                    
+                    <button onclick="changeFontType('sans')" id="f-sans" class="font-btn rounded-l-sm active">Sans</button>
+                    <button onclick="changeFontType('serif')" id="f-serif" class="font-btn rounded-r-sm">Serif</button>
+                    
+                    <div class="w-px bg-gray-300 mx-1"></div>
+                    
+                    <button onclick="toggleLegibility()" id="f-legibility" class="font-btn rounded-sm">High-Res</button>
+                </div>
+
+                <!-- Theme Selectors -->
+                <div class="flex bg-white p-0.5 rounded border border-gray-300 shadow-sm" id="themeGroup">
+                    <button onclick="changeTheme('light')" class="theme-btn rounded-l-sm">Light</button>
+                    <button onclick="changeTheme('slightGray')" class="theme-btn active">Gray</button>
+                    <button onclick="changeTheme('dark')" class="theme-btn">Dark</button>
+                    <button onclick="changeTheme('extraDark')" class="theme-btn rounded-r-sm">Extra</button>
+                </div>
+
+                <span id="versionLabel" class="version-badge">V3.2</span>
+                
+                <div class="flex bg-white p-0.5 rounded border border-gray-300 shadow-sm">
+                    <button onclick="setLanguage('en')" id="btn-en" class="lang-btn rounded-l-sm active">EN</button>
+                    <button onclick="setLanguage('zh')" id="btn-zh" class="lang-btn rounded-r-sm">繁</button>
+                </div>
+            </div>
+        </div>
+        <p id="subTitle" class="font-bold uppercase tracking-[0.1em] text-[10px] mt-1 opacity-70">Arlitech Rewards Oracle • Professional Series</p>
+    </header>
+
+    <!-- Global Controls -->
+    <aside class="full-container mb-3">
+        <div class="glass-card p-3 rounded shadow-sm">
+            <h3 id="quickSetTitle" class="text-[11px] font-bold uppercase mb-2 opacity-80">Quick Setup</h3>
+            <div class="grid grid-cols-2 md:grid-cols-7 gap-3 items-end">
+                <div class="space-y-1">
+                    <label id="labelPeriod" class="block text-[10px] font-bold uppercase">
+                        Period: <span id="yearVal" style="color: var(--matrix-primary1)">5</span> <span id="unitYear">Years</span>
+                    </label>
+                    <input type="range" id="yearSlider" min="1" max="10" value="5" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelGrantDate" class="block text-[10px] font-bold uppercase text-blue-700 dark:text-blue-400">Grant Date</label>
+                    <input type="date" id="grantDateInput" value="2026-04-17" class="param-input text-xs text-left" style="color: var(--matrix-primary1);">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelSalary" class="block text-[10px] font-bold uppercase">Base Salary</label>
+                    <input type="text" inputmode="decimal" id="baseSalaryInput" value="1,500,000" class="param-input">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelGrant" class="block text-[10px] font-bold uppercase">Grant Qty</label>
+                    <input type="text" inputmode="decimal" id="rsaGrantInput" value="40,000" class="param-input">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelPrice" class="block text-[10px] font-bold uppercase">Price</label>
+                    <input type="text" inputmode="decimal" id="stockPriceInput" value="38" class="param-input">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelCashDist" class="block text-[10px] font-bold uppercase">Cash Div/Sh</label>
+                    <input type="text" inputmode="decimal" id="cashDistInput" value="1.2" class="param-input" style="color: var(--matrix-primary1)">
+                </div>
+                <div class="space-y-1">
+                    <label id="labelExercise" class="block text-[10px] font-bold uppercase" style="color: var(--matrix-negative)">Sell Qty</label>
+                    <input type="text" inputmode="decimal" id="exerciseInput" value="-" class="param-input">
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Manual Overrides -->
+    <aside class="full-container mb-3">
+        <div class="glass-card p-3 rounded shadow-sm">
+            <h3 id="manualSchedTitle" class="text-[11px] font-bold uppercase mb-2 opacity-80">Annual Schedule Overrides</h3>
+            <div id="manualInputsContainer" class="max-h-40 overflow-y-auto pr-2 custom-scrollbar text-[12px]">
+                <!-- Inject -->
+            </div>
+        </div>
+    </aside>
+
+    <main class="full-container space-y-6 pb-12">
+        <section>
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-md font-bold uppercase" id="tableTitle">Overlapping Vesting Statement</h2>
+                    <span id="divNote" class="text-[9px] font-bold px-1.5 py-0.5 rounded border" style="color: var(--matrix-primary2); border-color: var(--matrix-primary2);">Div. Cutoff: Aug 15</span>
+                </div>
+                <span id="vestingNote" class="text-[10px] font-bold px-2 py-1 rounded" style="background-color: var(--matrix-main); color: var(--matrix-panel);">RSA: 20/30/50 Schedule</span>
+            </div>
+            <div class="table-container custom-scrollbar">
+                <table id="tdcTable">
+                    <thead>
+                        <tr id="tableHeadRow">
+                            <!-- Inject -->
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Inject -->
+                    </tbody>
+                    <tfoot id="tableFoot" class="font-bold text-[1.1em]" style="background-color: var(--matrix-main); color: var(--matrix-panel);">
+                        <!-- Inject -->
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <div class="grid lg:grid-cols-2 gap-4">
+             <!-- Chart Section Moved to Top -->
+             <section class="glass-card p-4 rounded shadow-sm flex flex-col lg:col-span-2" style="border-left: 4px solid var(--matrix-primary1);">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 id="chartTitle" class="font-bold text-xs uppercase tracking-tight">TDC Growth Trajectory</h3>
+                    <div class="flex items-center gap-2">
+                        <label id="labelChartTarget" class="text-[9px] font-bold uppercase opacity-70">Target Line:</label>
+                        <input type="text" inputmode="decimal" id="chartTargetInput" value="2,500,000" oninput="formatInput(this); syncTargets(this.value)" class="param-input text-xs w-24 text-right" style="color: var(--matrix-negative)">
+                    </div>
+                </div>
+                
+                <div class="w-full pt-20 pb-4">
+                    <div class="relative w-full h-64 mt-2 border-b" style="border-color: var(--matrix-grid);">
+                        <!-- Chart Area -->
+                        <div id="chartBars" class="absolute inset-0 flex items-end justify-between gap-2 px-1">
+                            <!-- Injected via JS -->
+                        </div>
+                        <!-- Target Line -->
+                        <div id="targetLine" class="absolute left-0 w-full border-t-2 border-dashed pointer-events-none z-0" style="border-color: var(--matrix-negative);">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                    <!-- X Axis Labels -->
+                    <div id="chartLabels" class="flex justify-between mt-2 text-xs font-bold opacity-70 w-full px-1">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="flex justify-center gap-6 mt-4 text-[11px] uppercase font-bold opacity-80">
+                    <div class="flex items-center gap-1">
+                        <span class="block w-2.5 h-2.5 rounded-sm" style="background-color: var(--matrix-primary1)"></span>
+                        <span id="legendTotal">Total TDC</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="block w-2.5 h-2.5 rounded-sm" style="background-color: var(--matrix-accent)"></span>
+                        <span id="legendAvg">Avg. TDC</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="block w-4 h-[2px] border-b-2 border-dashed" style="border-color: var(--matrix-negative)"></span>
+                        <span id="legendTarget">3M Target</span>
+                    </div>
+                </div>
+             </section>
+
+             <!-- Simulator Section Moved to Bottom & Spanned Full Width -->
+             <section class="glass-card p-3 rounded shadow-sm lg:col-span-2">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-bold uppercase flex items-center gap-1">
+                        <svg class="h-4 w-4" style="color: var(--matrix-primary1)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                        <span id="textSimTitle">Y1 Package Simulator</span>
+                    </h3>
+                    <div class="flex bg-white p-0.5 rounded border border-gray-300 shadow-sm">
+                        <button onclick="setSimMode('Y1')" id="btn-sim-y1" class="font-btn rounded-l-sm active px-3">Y1</button>
+                        <button onclick="setSimMode('Y3')" id="btn-sim-y3" class="font-btn rounded-r-sm px-3">Y3 Avg</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-5 gap-2 mb-3">
+                    <div class="space-y-1">
+                        <label id="labelSimTarget" class="block text-[8px] font-bold uppercase opacity-70">Y1 Target TDC</label>
+                        <input type="text" inputmode="decimal" id="simTargetInput" value="2,500,000" oninput="formatInput(this); syncTargets(this.value)" class="param-input text-xs text-right" style="color: var(--matrix-negative)">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="labelSimGrant" class="block text-[8px] font-bold uppercase opacity-70">Grant Qty</label>
+                        <input type="text" inputmode="decimal" id="simGrantInput" oninput="formatInput(this); calculateTargetTDC()" class="param-input text-xs text-right">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="labelSimPrice" class="block text-[8px] font-bold uppercase opacity-70">Price</label>
+                        <input type="text" inputmode="decimal" id="simPriceInput" oninput="formatInput(this); calculateTargetTDC()" class="param-input text-xs text-right">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="labelSimDiv" class="block text-[8px] font-bold uppercase opacity-70">Cash Div.</label>
+                        <input type="text" inputmode="decimal" id="simDivInput" oninput="formatInput(this); calculateTargetTDC()" class="param-input text-xs text-right" style="color: var(--matrix-primary1)">
+                    </div>
+                    <div class="space-y-1">
+                        <label id="labelSimSell" class="block text-[8px] font-bold uppercase opacity-70" style="color: var(--matrix-negative)">Sell Qty</label>
+                        <input type="text" inputmode="decimal" id="simSellInput" value="-" oninput="formatInput(this); calculateTargetTDC()" class="param-input text-xs text-right">
+                    </div>
+                </div>
+                <div class="result-box p-3 rounded flex flex-col justify-center items-center">
+                    <span id="labelSimReqBase" class="text-[10px] block opacity-60 uppercase mb-1 tracking-wider">Required Base Sal. (Non-RSA Pkg)</span>
+                    <span class="text-2xl font-bold legibility-enhanced" style="color: var(--matrix-primary2)" id="simResultReqBase">NT$ -</span>
+                </div>
+             </section>
+        </div>
+    </main>
+
+    <script>
+        let currentLang = 'en';
+        let manualData = [];
+        let currentChartData = [];
+        let isEnhancedLegibility = false;
+        let currentSimMode = 'Y1'; // Tracks Simulator Mode
+
+        // Number Formatting Helpers
+        function parseVal(val) {
+            if (val === undefined || val === null || val === '-' || val === '') return 0;
+            return parseFloat(String(val).replace(/,/g, '')) || 0;
+        }
+
+        function formatNum(val) {
+            if (val === undefined || val === null || val === '-' || val === '') return '-';
+            let numericVal = parseFloat(String(val).replace(/,/g, ''));
+            if (isNaN(numericVal) || numericVal === 0) return '-';
+            let parts = String(numericVal).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return parts.join('.');
+        }
+
+        // Custom display formatting for table cells
+        function displayNum(val) {
+            const rounded = Math.round(val);
+            if (rounded === 0) return '-';
+            return rounded.toLocaleString();
+        }
+
+        function formatInput(el) {
+            if (!el) return;
+            let val = el.value;
+            
+            // Allow empty or dash to naturally convert to accounting dash
+            if (val === '' || val === '-') {
+                el.value = '-';
+                return;
+            }
+            
+            let start = el.selectionStart;
+            let commasBefore = (val.substring(0, start).match(/,/g) || []).length;
+            
+            let clean = val.replace(/[^0-9.]/g, '');
+            if (clean === '') {
+                el.value = '-';
+                return;
+            }
+            
+            let parts = clean.split('.');
+            if (parts.length > 2) clean = parts[0] + '.' + parts.slice(1).join('');
+            
+            let formatted = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            if (parts.length > 1) {
+                formatted += '.' + parts[1];
+            }
+            
+            el.value = formatted;
+            
+            let newCommasBefore = (formatted.substring(0, start).match(/,/g) || []).length;
+            start += (newCommasBefore - commasBefore);
+            el.setSelectionRange(start, start);
+        }
+
+        const themes = {
+            light: { bg: '#F0EEE9', panel: '#E7EAEE', main: '#2B2B6E', label: '#7D8090', grid: '#AEB4C1', primary1: '#2B2B6E', primary2: '#918A9E', positive: '#2E8F5A', negative: '#C03939', accent: '#CCAC8C', input: '#FFFFFF' },
+            slightGray: { bg: '#E0DED8', panel: '#F5F4F2', main: '#1A1A1A', label: '#444444', grid: '#B5B5B5', primary1: '#245B61', primary2: '#32938B', positive: '#26764A', negative: '#AA2E2E', accent: '#b4c00c', input: '#FFFFFF' },
+            dark: { bg: '#DEE6E1', panel: '#FCFCFC', main: '#262216', label: '#668177', grid: '#8CA69C', primary1: '#262216', primary2: '#5B7C71', positive: '#2E8F5A', negative: '#C03939', accent: '#b4c00c', input: '#FFFFFF' },
+            extraDark: { bg: '#121212', panel: '#1E1E1E', main: '#E0E0E0', label: '#A0A0A0', grid: '#333333', primary1: '#00897B', primary2: '#26A69A', positive: '#43A047', negative: '#E53935', accent: '#FFB300', input: '#2A2A2A' }
+        };
+
+        const i18n = {
+            en: {
+                mainTitle: "Total Rewards Dynamic Modeling Simulator",
+                subTitle: "Arlitech Rewards •Air-Banquet• Official Mode",
+                quickSetTitle: "Quick Setup",
+                manualSchedTitle: "Annual Schedule Overrides",
+                labelPeriod: "Period: ",
+                unitYear: "Years",
+                labelGrantDate: "Grant Date",
+                labelSalary: "Base Salary",
+                labelGrant: "Grant Qty",
+                labelPrice: "Price",
+                labelCashDist: "Cash Div/Sh",
+                labelExercise: "Sell Qty",
+                tableTitlePrefix: "Overlapping Vesting (",
+                tableTitleSuffix: " Years)",
+                divNote: "Div. Cutoff: Aug 15",
+                vestingNote: "RSA: 20/30/50 Schedule",
+                heads: ["Year/Date", "Base Sal.", "Vested", "Breakdown", "Vest Val.", "Sales (Qty)", "Cash Div. (Hold)", "Total TDC", "Avg. TDC"],
+                sumAccumulated: "ACCUMULATED",
+                sumAvg: "ANNUAL AVG",
+                sharesUnit: "sh/y",
+                colYear: "Year", colSal: "Sal", colGr: "Qty", colPr: "Pr", colCash: "Div", colSell: "Sell",
+                targetSimTitleY1: "Y1 Package Simulator",
+                targetSimTitleY3: "Y3 Averaged Pkg Simulator",
+                labelSimTargetY1: "Y1 Target TDC",
+                labelSimTargetY3: "Y3 Target Avg TDC",
+                labelSimGrant: "Grant Qty", labelSimPrice: "Price", labelSimDiv: "Cash Div.", labelSimSell: "Sell Qty",
+                labelSimReqBase: "Required Base Sal. (Non-RSA Pkg)",
+                chartTitle: "TDC Growth Trajectory",
+                labelChartTarget: "Target Line:",
+                legendTotal: "Total TDC",
+                legendAvg: "Avg. TDC",
+                colorPlateTitle: "Color System Fine-Tune"
+            },
+            zh: {
+                mainTitle: "總薪酬精算平台",
+                subTitle: "加入今展 • 一路舒坦 • BSD出品-必屬佳作",
+                quickSetTitle: "快速設定",
+                manualSchedTitle: "年度參數手動控制區",
+                labelPeriod: "預測週期: ",
+                unitYear: "年",
+                labelGrantDate: "授予日期",
+                labelSalary: "年度底薪",
+                labelGrant: "授予股數",
+                labelPrice: "目標股價",
+                labelCashDist: "每股分紅",
+                labelExercise: "出售股數",
+                tableTitlePrefix: "疊加歸屬明細表 (",
+                tableTitleSuffix: "年)",
+                divNote: "除息基準日：8月15日",
+                vestingNote: "可實現比例：20% / 30% / 50%",
+                heads: ["歸屬年份", "底薪現金", "既得股數", "明細拆解", "既得價值", "出售 (股)", "現金股利 (持股)", "年度總額", "平均年薪"],
+                sumAccumulated: "累計總計",
+                sumAvg: "加權平均",
+                sharesUnit: "股/年",
+                colYear: "年份", colSal: "底薪", colGr: "授予", colPr: "股價", colCash: "分紅", colSell: "賣出",
+                targetSimTitleY1: "Y1 目標薪酬反推模擬器",
+                targetSimTitleY3: "Y3 平均薪酬反推模擬器",
+                labelSimTargetY1: "Y1 目標總薪酬",
+                labelSimTargetY3: "Y3 目標平均薪酬",
+                labelSimGrant: "年發放股", labelSimPrice: "預期股價", labelSimDiv: "預期股息", labelSimSell: "賣出股數",
+                labelSimReqBase: "要求底薪 (非 RSA 現金薪酬)",
+                chartTitle: "總薪酬成長軌跡",
+                labelChartTarget: "目標基準線:",
+                legendTotal: "年度總額",
+                legendAvg: "平均年薪",
+                colorPlateTitle: "色彩系統微調儀表板"
+            }
+        };
+
+        const slider = document.getElementById('yearSlider');
+        const grantDateInp = document.getElementById('grantDateInput');
+        const salaryInp = document.getElementById('baseSalaryInput');
+        const rsaInp = document.getElementById('rsaGrantInput');
+        const stockInp = document.getElementById('stockPriceInput');
+        const cashDistInp = document.getElementById('cashDistInput');
+        const exerciseInp = document.getElementById('exerciseInput');
+        const manualContainer = document.getElementById('manualInputsContainer');
+
+        function initData() {
+            // Respect HTML default settings or fallback
+            if (!grantDateInp.value) {
+                grantDateInp.value = '2026-04-17';
+            }
+
+            const defaultSalary = parseVal(salaryInp.value) || 1500000;
+            const defaultGrant = parseVal(rsaInp.value) || 40000;
+            const defaultPrice = parseVal(stockInp.value) || 38;
+            const defaultCash = parseVal(cashDistInp.value) || 1.2;
+
+            salaryInp.value = formatNum(defaultSalary);
+            rsaInp.value = formatNum(defaultGrant);
+            stockInp.value = formatNum(defaultPrice);
+            cashDistInp.value = formatNum(defaultCash);
+
+            for(let i=0; i<=10; i++) {
+                manualData[i] = { 
+                    salary: defaultSalary, 
+                    grant: defaultGrant, 
+                    price: defaultPrice, 
+                    cashDist: defaultCash, 
+                    exercise: 0 
+                };
+            }
+            renderTunePlate();
+        }
+
+        // Helper: Calculate exact date by adding years
+        function getCalculatedDate(baseDateString, yearsToAdd) {
+            if (!baseDateString) return "";
+            const dateObj = new Date(baseDateString);
+            dateObj.setFullYear(dateObj.getFullYear() + yearsToAdd);
+            return dateObj.toISOString().split('T')[0];
+        }
+
+        /* --- FONT ENGINE --- */
+        function changeFontSize(size) {
+            document.documentElement.style.setProperty('--matrix-font-size', size);
+            document.querySelectorAll('#fontGroup .font-btn').forEach(btn => {
+                if (btn.innerText.includes('A')) btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function changeFontType(type) {
+            const font = type === 'serif' ? '"Noto Serif", Georgia, serif' : '"Microsoft Jhenghei UI", "Microsoft JhengHei", sans-serif';
+            document.documentElement.style.setProperty('--matrix-font-family', font);
+            document.getElementById('f-sans').classList.toggle('active', type === 'sans');
+            document.getElementById('f-serif').classList.toggle('active', type === 'serif');
+        }
+
+        function toggleLegibility() {
+            isEnhancedLegibility = !isEnhancedLegibility;
+            document.body.classList.toggle('legibility-enhanced', isEnhancedLegibility);
+            document.documentElement.style.setProperty('--matrix-font-weight', isEnhancedLegibility ? '800' : '600');
+            document.getElementById('f-legibility').classList.toggle('active', isEnhancedLegibility);
+        }
+
+        /* --- THEME & COLOR ENGINE --- */
+        function loadSavedColors() {
+            const keys = ['bg', 'panel', 'main', 'label', 'grid', 'primary1', 'primary2', 'positive', 'negative', 'accent', 'input'];
+            keys.forEach(key => {
+                const savedColor = localStorage.getItem(`matrix_color_${key}`);
+                if (savedColor) {
+                    document.documentElement.style.setProperty(`--matrix-${key}`, savedColor);
+                }
+            });
+        }
+
+        function changeTheme(themeKey) {
+            const theme = themes[themeKey];
+            Object.keys(theme).forEach(key => {
+                document.documentElement.style.setProperty(`--matrix-${key}`, theme[key]);
+                localStorage.setItem(`matrix_color_${key}`, theme[key]); // Save theme selection to local storage
+            });
+            document.querySelectorAll('#themeGroup button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            openModal();
+        }
+
+        function openModal() {
+            renderTunePlate();
+            document.getElementById('colorModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('colorModal').classList.remove('active');
+        }
+
+        function updateColor(key, value) {
+            document.documentElement.style.setProperty(`--matrix-${key}`, value);
+            localStorage.setItem(`matrix_color_${key}`, value); // Save customized color to local storage
+            
+            // Dynamically update the hex text label when the user is picking a color
+            const hexLabel = document.getElementById(`hexVal-${key}`);
+            if (hexLabel) {
+                hexLabel.innerText = value.toUpperCase();
+            }
+        }
+
+        function renderTunePlate() {
+            const keys = ['bg', 'panel', 'main', 'label', 'grid', 'primary1', 'primary2', 'positive', 'negative', 'accent', 'input'];
+            let html = "";
+            keys.forEach(key => {
+                // Fetch the exact current color to ensure settings are kept across opens
+                let currentVal = getComputedStyle(document.documentElement).getPropertyValue(`--matrix-${key}`).trim();
+                
+                // Format to standard 6-character hex if needed (though inputs return standard hex)
+                if (currentVal.length === 4) {
+                     currentVal = '#' + currentVal[1]+currentVal[1] + currentVal[2]+currentVal[2] + currentVal[3]+currentVal[3];
+                }
+
+                html += `
+                    <div class="color-well">
+                        <input type="color" class="color-input" value="${currentVal}" oninput="updateColor('${key}', this.value)">
+                        <div class="flex flex-col justify-center">
+                            <span class="text-[10px] uppercase font-bold text-gray-700 leading-tight">${key}</span>
+                            <span id="hexVal-${key}" class="text-[8px] font-mono text-gray-500 tracking-wider">${currentVal.toUpperCase()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('tunePlate').innerHTML = html;
+        }
+
+        /* --- I18N & TABLE ENGINE --- */
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${lang}`).classList.add('active');
+            updateUI();
+        }
+
+        function safeSetText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
+        }
+
+        function setSimMode(mode) {
+            currentSimMode = mode;
+            document.getElementById('btn-sim-y1').classList.toggle('active', mode === 'Y1');
+            document.getElementById('btn-sim-y3').classList.toggle('active', mode === 'Y3');
+            
+            const t = i18n[currentLang];
+            safeSetText('textSimTitle', mode === 'Y1' ? t.targetSimTitleY1 : t.targetSimTitleY3);
+            safeSetText('labelSimTarget', mode === 'Y1' ? t.labelSimTargetY1 : t.labelSimTargetY3);
+            
+            calculateTargetTDC();
+        }
+
+        function updateUI() {
+            const t = i18n[currentLang];
+            safeSetText('mainTitle', t.mainTitle);
+            safeSetText('subTitle', t.subTitle);
+            safeSetText('quickSetTitle', t.quickSetTitle);
+            safeSetText('manualSchedTitle', t.manualSchedTitle);
+            const periodEl = document.getElementById('labelPeriod');
+            if (periodEl && periodEl.childNodes.length > 0) periodEl.childNodes[0].textContent = t.labelPeriod;
+            safeSetText('unitYear', t.unitYear);
+            
+            // Dynamic text based on mode
+            safeSetText('textSimTitle', currentSimMode === 'Y1' ? t.targetSimTitleY1 : t.targetSimTitleY3);
+            safeSetText('labelSimTarget', currentSimMode === 'Y1' ? t.labelSimTargetY1 : t.labelSimTargetY3);
+            
+            // Apply texts for IDs
+            ['labelGrantDate', 'labelSalary', 'labelGrant', 'labelPrice', 'labelCashDist', 'labelExercise', 'divNote', 'vestingNote', 'labelSimGrant', 'labelSimPrice', 'labelSimDiv', 'labelSimSell', 'labelSimReqBase', 'chartTitle', 'labelChartTarget', 'legendTotal', 'legendAvg', 'colorPlateTitle'].forEach(id => safeSetText(id, t[id]));
+
+            const colClasses = ["col-year", "col-base", "col-shares", "col-calc", "col-equity", "col-sell", "col-cash", "col-tdc", "col-avg"];
+            let headHtml = "";
+            t.heads.forEach((h, i) => {
+                const alignClass = (i === 0 || i === 3) ? "" : "numeric";
+                headHtml += `<th class="${alignClass} ${colClasses[i]}">${h}</th>`;
+            });
+            const headRow = document.getElementById('tableHeadRow');
+            if (headRow) headRow.innerHTML = headHtml;
+
+            renderManualInputs();
+            updateTable();
+            calculateTargetTDC();
+        }
+
+        function renderManualInputs() {
+            const t = i18n[currentLang];
+            const years = parseInt(slider.value);
+            const baseDate = grantDateInp.value;
+            
+            let html = `
+                <div class="manual-row font-bold text-[8px] uppercase bg-[var(--matrix-panel)] p-1 mb-1 sticky top-0 z-20 border-b shadow-sm" style="border-color: var(--matrix-grid);">
+                    <div>${t.colYear}</div><div>${t.colSal}</div><div>${t.colGr}</div><div>${t.colPr}</div><div>${t.colCash}</div><div style="color: var(--matrix-negative)">${t.colSell}</div>
+                </div>
+            `;
+            for(let i=0; i<=years; i++) {
+                const stepDate = getCalculatedDate(baseDate, i);
+                
+                html += `
+                    <div class="manual-row border-b border-gray-400/30">
+                        <div class="flex flex-col">
+                            <span class="font-bold opacity-80 leading-none">Y${i}</span>
+                            <span class="text-[8px] opacity-60 font-mono tracking-tighter">${stepDate}</span>
+                        </div>
+                        <input type="text" inputmode="decimal" value="${formatNum(manualData[i].salary)}" oninput="formatInput(this); updateManualData(${i}, 'salary', this.value)" class="param-input">
+                        <input type="text" inputmode="decimal" value="${formatNum(manualData[i].grant)}" oninput="formatInput(this); updateManualData(${i}, 'grant', this.value)" class="param-input">
+                        <input type="text" inputmode="decimal" value="${formatNum(manualData[i].price)}" oninput="formatInput(this); updateManualData(${i}, 'price', this.value)" class="param-input">
+                        <input type="text" inputmode="decimal" value="${formatNum(manualData[i].cashDist)}" oninput="formatInput(this); updateManualData(${i}, 'cashDist', this.value)" class="param-input" style="color: var(--matrix-primary1)">
+                        <input type="text" inputmode="decimal" value="${formatNum(manualData[i].exercise || 0)}" oninput="formatInput(this); updateManualData(${i}, 'exercise', this.value)" class="param-input" style="color: var(--matrix-negative)">
+                    </div>
+                `;
+            }
+            if (manualContainer) manualContainer.innerHTML = html;
+        }
+
+        function updateManualData(index, field, value) {
+            manualData[index][field] = parseVal(value);
+            updateTable();
+            calculateTargetTDC();
+        }
+
+        function syncGlobalToManual() {
+            const vals = [
+                parseVal(salaryInp.value), 
+                parseVal(rsaInp.value), 
+                parseVal(stockInp.value), 
+                parseVal(cashDistInp.value), 
+                parseVal(exerciseInp.value)
+            ];
+            
+            const simGrantEl = document.getElementById('simGrantInput');
+            const simPriceEl = document.getElementById('simPriceInput');
+            const simDivEl = document.getElementById('simDivInput');
+            const simSellEl = document.getElementById('simSellInput');
+            
+            if (simGrantEl) simGrantEl.value = formatNum(vals[1]);
+            if (simPriceEl) simPriceEl.value = formatNum(vals[2]);
+            if (simDivEl) simDivEl.value = formatNum(vals[3]);
+            if (simSellEl) simSellEl.value = formatNum(vals[4]);
+
+            for(let i=0; i<=10; i++) {
+                manualData[i].salary = vals[0];
+                manualData[i].grant = vals[1];
+                manualData[i].price = vals[2];
+                manualData[i].cashDist = vals[3];
+                manualData[i].exercise = vals[4];
+            }
+            renderManualInputs();
+            updateTable();
+            calculateTargetTDC();
+        }
+
+        function updateTable() {
+            const t = i18n[currentLang];
+            const years = parseInt(slider.value);
+            const baseDate = grantDateInp.value;
+            const yearValEl = document.getElementById('yearVal');
+            
+            // Extract Month and Day to determine Ex-Dividend condition (Aug 15)
+            const bMonth = parseInt(baseDate.split('-')[1]);
+            const bDay = parseInt(baseDate.split('-')[2]);
+            const isAfterDiv = (bMonth > 8) || (bMonth === 8 && bDay > 15);
+            
+            if (yearValEl) yearValEl.innerText = years;
+            const tableTitleEl = document.getElementById('tableTitle');
+            if (tableTitleEl) tableTitleEl.innerText = `${t.tableTitlePrefix}${years}${t.tableTitleSuffix}`;
+            
+            let html = "";
+            let chartData = [];
+            let sums = { sal:0, shr:0, val:0, soldQty:0, soldVal:0, div:0, tdc:0 };
+            let cumGrant = 0;
+            let cumVested = 0;
+            let cumSold = 0;
+            let prevHeldShares = 0;
+
+            for (let y = 0; y <= years; y++) {
+                let vShr = 0; let cHtml = "";
+                const cur = manualData[y];
+                cumGrant += cur.grant;
+                
+                const stepDate = getCalculatedDate(baseDate, y);
+
+                for (let g = 0; g <= y; g++) {
+                    let idx = y - g; let p = 0;
+                    if (idx === 1) p = 0.2; else if (idx === 2) p = 0.3; else if (idx === 3) p = 0.5;
+                    if (p > 0) {
+                        const amt = manualData[g].grant;
+                        const v = amt * p; vShr += v;
+                        const vestVal = v * cur.price;
+                        const shareLabel = currentLang === 'zh' ? '股' : 'sh';
+                        const valLabel = currentLang === 'zh' ? '值' : 'Val';
+                        
+                        const displayAmt = displayNum(amt);
+                        const displayV = displayNum(v);
+                        cHtml += `<span class="calc-line">G${g}: <span class="font-bold">${displayAmt}</span>×${Math.round(p*100)}%=<span class="font-bold" style="color: var(--matrix-primary1)">${displayV}</span>${shareLabel} <span class="text-[9px] opacity-80 ml-1 font-mono">(${valLabel}: ${displayNum(vestVal)})</span></span>`;
+                    }
+                }
+                
+                if (cHtml === "") {
+                    cHtml = `<span class="calc-line opacity-50">${currentLang === 'zh' ? '期初授予，尚無歸屬' : 'Initial Grant (No Vest)'}</span>`;
+                }
+
+                cumVested += vShr;
+
+                let actualSell = Math.max(0, Math.min(cur.exercise || 0, cumVested - cumSold));
+                cumSold += actualSell;
+                let sellVal = actualSell * cur.price;
+
+                const eqV = vShr * cur.price;
+                const currentHeldShares = Math.max(0, cumGrant - cumSold);
+                
+                // Dynamic Ex-Dividend Cutoff Algorithm
+                // Since RSA grants immediate dividend rights, if the grant date (e.g. Apr 17) is BEFORE the ex-dividend date (Aug 15),
+                // the user enjoys the dividend on the full current inventory in that same year.
+                // If granted after Aug 15, they wait until next year (using prevHeldShares).
+                const heldSharesForDiv = isAfterDiv ? prevHeldShares : currentHeldShares;
+                const divV = heldSharesForDiv * cur.cashDist;
+                
+                const tdc = cur.salary + eqV + divV;
+                
+                sums.tdc += tdc;
+                sums.sal += cur.salary; sums.shr += vShr; sums.val += eqV; sums.div += divV;
+                sums.soldQty += actualSell; sums.soldVal += sellVal;
+
+                let avg = sums.tdc / (y + 1);
+                
+                // Track data for the infographic chart
+                chartData.push({ year: y, tdc: tdc, avg: avg });
+
+                html += `
+                    <tr class="hover:bg-black/5 transition-colors">
+                        <td class="font-bold">
+                            Y${y}<br>
+                            <span class="text-[8.5px] opacity-60 font-mono font-normal tracking-tighter block mt-0.5">${stepDate}</span>
+                        </td>
+                        <td class="numeric">${displayNum(cur.salary)}</td>
+                        <td class="numeric font-bold" style="color: var(--matrix-primary1)">${displayNum(vShr)}</td>
+                        <td class="col-calc-cell">${cHtml}</td>
+                        <td class="numeric">${displayNum(eqV)}</td>
+                        <td class="numeric font-bold" style="color: var(--matrix-negative)">${displayNum(actualSell)}</td>
+                        <td class="numeric font-bold" style="color: var(--matrix-primary1)">
+                            ${displayNum(divV)}<br>
+                            <span class="text-[9px] opacity-70 block font-mono font-normal tracking-tighter">Hold: ${displayNum(heldSharesForDiv)}</span>
+                        </td>
+                        <td class="numeric font-bold" style="background-color: var(--matrix-bg); opacity: 0.9">${displayNum(tdc)}</td>
+                        <td class="numeric font-bold" style="background-color: var(--matrix-panel)">${displayNum(avg)}</td>
+                    </tr>
+                `;
+                
+                prevHeldShares = currentHeldShares;
+            } 
+
+            const tableBody = document.getElementById('tableBody');
+            if (tableBody) tableBody.innerHTML = html;
+            const tableFoot = document.getElementById('tableFoot');
+            if (tableFoot) {
+                tableFoot.innerHTML = `
+                    <tr>
+                        <td class="py-2">${t.sumAccumulated}</td>
+                        <td class="numeric">${displayNum(sums.sal)}</td>
+                        <td class="numeric">${displayNum(sums.shr)}</td>
+                        <td class="col-calc-cell">-</td>
+                        <td class="numeric">${displayNum(sums.val)}</td>
+                        <td class="numeric" style="color: var(--matrix-negative)">${displayNum(sums.soldQty)}</td>
+                        <td class="numeric">${displayNum(sums.div)}</td>
+                        <td class="numeric" style="color: var(--matrix-accent)">${displayNum(sums.tdc)}</td>
+                        <td class="numeric" style="color: var(--matrix-accent)">${displayNum(sums.tdc/(years + 1))}</td>
+                    </tr>
+                `;
+            }
+
+            currentChartData = chartData;
+            drawChart(currentChartData);
+        }
+
+        // Two-way synchronization for Target Inputs
+        function syncTargets(value) {
+            const val = parseVal(value);
+            const formattedVal = formatNum(val);
+            const simTarget = document.getElementById('simTargetInput');
+            const chartTarget = document.getElementById('chartTargetInput');
+            
+            if (simTarget && simTarget !== document.activeElement) simTarget.value = formattedVal;
+            if (chartTarget && chartTarget !== document.activeElement) chartTarget.value = formattedVal;
+            
+            calculateTargetTDC();
+            if(currentChartData.length > 0) {
+                drawChart(currentChartData);
+            }
+        }
+
+        function drawChart(data) {
+            const chartBars = document.getElementById('chartBars');
+            const chartLabels = document.getElementById('chartLabels');
+            const targetLine = document.getElementById('targetLine');
+            const legendTargetEl = document.getElementById('legendTarget');
+            
+            if (!chartBars || !chartLabels || !targetLine) return;
+
+            // Fetch target directly from the input field
+            const targetVal = parseVal(document.getElementById('chartTargetInput')?.value) || parseVal(document.getElementById('simTargetInput')?.value) || 2500000;
+            // Find max value for scaling (ensure target fits visually)
+            const maxVal = Math.max(targetVal, ...data.map(d => Math.max(d.tdc, d.avg))) * 1.15; 
+
+            // Smart Formatting: E.g., 300W vs 300.5W
+            let targetNum = targetVal / 10000;
+            let targetStr = targetNum % 1 === 0 ? targetNum.toFixed(0) : targetNum.toFixed(1);
+            const targetDisplay = targetStr + (currentLang === 'zh' ? '萬' : 'W');
+
+            let barsHtml = '';
+            let labelsHtml = '';
+
+            data.forEach(d => {
+                const tdcHeight = (d.tdc / maxVal) * 100;
+                const avgHeight = (d.avg / maxVal) * 100;
+
+                const displayTdc = (d.tdc / 10000).toFixed(1) + (currentLang === 'zh' ? '萬' : 'W');
+                const displayAvg = (d.avg / 10000).toFixed(1) + (currentLang === 'zh' ? '萬' : 'W');
+
+                // 智慧防重疊演算法 (Smart Anti-Collision Logic)
+                let tdcMb = "mb-1";
+                let avgMb = "mb-1";
+                
+                // 當兩根長條圖高度過於接近 (差異小於 25%) 時，強制啟動階梯式垂直閃避
+                if (Math.abs(tdcHeight - avgHeight) < 25) {
+                    if (tdcHeight >= avgHeight) {
+                        tdcMb = "mb-12"; // 左側長條較高或相等時，將左標籤大幅拉高飛越
+                        avgMb = "mb-1"; 
+                    } else {
+                        tdcMb = "mb-1";
+                        avgMb = "mb-12"; // 右側長條較高時，將右標籤大幅拉高避免追撞
+                    }
+                }
+
+                barsHtml += `
+                    <div class="flex-1 flex justify-center items-end h-full group relative gap-[4px]">
+                        <!-- Tooltip -->
+                        <div class="absolute -top-16 bg-black/80 text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none whitespace-nowrap shadow-md text-center">
+                            <span class="font-bold border-b border-white/30 pb-0.5 block mb-1">Y${d.year}</span>
+                            Total: ${displayTdc}<br>Avg: ${displayAvg}
+                        </div>
+                        
+                        <!-- Total TDC Bar with Data Label -->
+                        <div class="w-1/2 max-w-[24px] rounded-t-sm transition-all duration-500 ease-out relative flex justify-center" style="height: ${tdcHeight}%; background-color: var(--matrix-primary1);">
+                            <span class="absolute bottom-full ${tdcMb} left-1/2 origin-bottom-left -rotate-45 text-[11px] font-black whitespace-nowrap px-1.5 py-0.5 rounded bg-[var(--matrix-panel)]/95 backdrop-blur shadow-sm border border-[var(--matrix-grid)]/50 z-20 legibility-enhanced" style="color: var(--matrix-primary1); transform: translateX(-30%);">${displayTdc}</span>
+                        </div>
+                        
+                        <!-- Avg TDC Bar with Data Label -->
+                        <div class="w-1/2 max-w-[24px] rounded-t-sm transition-all duration-500 ease-out relative flex justify-center" style="height: ${avgHeight}%; background-color: var(--matrix-accent);">
+                            <span class="absolute bottom-full ${avgMb} left-1/2 origin-bottom-left -rotate-45 text-[11px] font-black whitespace-nowrap px-1.5 py-0.5 rounded bg-[var(--matrix-panel)]/95 backdrop-blur shadow-sm border border-[var(--matrix-grid)]/50 z-10 legibility-enhanced" style="color: var(--matrix-accent); transform: translateX(-30%);">${displayAvg}</span>
+                        </div>
+                    </div>
+                `;
+                labelsHtml += `<div class="flex-1 text-center">Y${d.year}</div>`;
+            });
+
+            chartBars.innerHTML = barsHtml;
+            chartLabels.innerHTML = labelsHtml;
+
+            // Target Line Logic
+            const targetPos = (targetVal / maxVal) * 100;
+            targetLine.style.bottom = `${targetPos}%`;
+            targetLine.innerHTML = `<span class="absolute -top-5 right-0 text-[10px] bg-[var(--matrix-panel)] px-1 rounded font-bold" style="color: var(--matrix-negative)">${targetDisplay} Target</span>`;
+
+            // Update Legend Dynamics
+            if (legendTargetEl) {
+                legendTargetEl.innerText = currentLang === 'zh' ? `${targetDisplay} 目標` : `${targetDisplay} Target`;
+            }
+        }
+
+        // Multi-Year Averaging Simulator Engine
+        function calculateTargetTDC() {
+            const target = parseVal(document.getElementById('simTargetInput')?.value);
+            const grant = parseVal(document.getElementById('simGrantInput')?.value);
+            const price = parseVal(document.getElementById('simPriceInput')?.value);
+            const div = parseVal(document.getElementById('simDivInput')?.value);
+            const sell = parseVal(document.getElementById('simSellInput')?.value);
+            
+            const baseDate = document.getElementById('grantDateInput')?.value || new Date().toISOString().split('T')[0];
+            const bMonth = parseInt(baseDate.split('-')[1]);
+            const bDay = parseInt(baseDate.split('-')[2]);
+            const isAfterDiv = (bMonth > 8) || (bMonth === 8 && bDay > 15);
+
+            // Determine if simulating up to Y1 or Y3
+            const targetYear = currentSimMode === 'Y1' ? 1 : 3;
+            
+            let cumGrant = 0;
+            let cumVested = 0;
+            let cumSold = 0;
+            let prevHeldShares = 0;
+            let sumTdcWithoutBase = 0;
+
+            // Loop to calculate accumulated Equity & Dividend value WITHOUT Base Salary
+            for (let y = 0; y <= targetYear; y++) {
+                cumGrant += grant;
+                let vShr = 0;
+                for (let g = 0; g <= y; g++) {
+                    let idx = y - g; let p = 0;
+                    if (idx === 1) p = 0.2; else if (idx === 2) p = 0.3; else if (idx === 3) p = 0.5;
+                    if (p > 0) vShr += grant * p;
+                }
+                
+                cumVested += vShr;
+                // Smart Vesting Cap Protection
+                let actualSell = Math.min(sell, cumVested - cumSold);
+                cumSold += actualSell;
+                
+                const eqV = vShr * price;
+                const currentHeldShares = Math.max(0, cumGrant - cumSold);
+                
+                const heldSharesForDiv = isAfterDiv ? prevHeldShares : currentHeldShares;
+                const divV = heldSharesForDiv * div;
+                
+                sumTdcWithoutBase += (eqV + divV);
+                prevHeldShares = currentHeldShares;
+            }
+            
+            // Formula: Target = [ (ReqBase * N_Years) + Sum_Without_Base ] / N_Years
+            // Therefore: ReqBase = Target - (Sum_Without_Base / N_Years)
+            let reqBase = target - (sumTdcWithoutBase / (targetYear + 1));
+            
+            // Prevent negative salary
+            if (reqBase < 0) reqBase = 0; 
+
+            safeSetText('simResultReqBase', reqBase === 0 ? 'NT$ -' : `NT$ ${displayNum(reqBase)}`);
+        }
+
+        slider.addEventListener('input', () => { renderManualInputs(); updateTable(); });
+        grantDateInp.addEventListener('input', () => { renderManualInputs(); updateTable(); });
+        
+        [salaryInp, rsaInp, stockInp, cashDistInp, exerciseInp].forEach(el => el.addEventListener('input', function() {
+            formatInput(this);
+            syncGlobalToManual();
+        }));
+        
+        window.onload = () => { loadSavedColors(); initData(); updateUI(); };
+    </script>
+</body>
+</html>
